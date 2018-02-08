@@ -130,7 +130,10 @@ console.log( 'The total number of transactions is:', totalTransactions );
   HINT(S):
   - Not all transactions are 'sales'.
 */
-var numSales;
+var numSales = transactions.filter(function(transaction) {
+  return (transaction.type === 'sale');
+}).length;
+
 
 /*
   Hey, welcome to the first question!
@@ -160,7 +163,9 @@ console.log( 'The total number of sales is:', numSales );
 /*
   Calculate the total number of 'purchases'.
 */
-var numPurchases;
+var numPurchases = transactions.filter(function(transaction) {
+  return (transaction.type === 'purchase');
+}).length;
 
 console.log( 'The total number of purchases is:', numPurchases );
 
@@ -174,7 +179,9 @@ console.log( 'The total number of purchases is:', numPurchases );
   HINT(S):
   - Don't forget that 'purchases' can also be made in 'cash'!
 */
-var numCashSales;
+var numCashSales = transactions.filter(function(transaction) {
+  return (transaction.paymentMethod === 'cash');
+}).length;
 
 console.log( 'The total number of cash sales is:', numCashSales );
 
@@ -188,7 +195,7 @@ console.log( 'The total number of cash sales is:', numCashSales );
   HINT(S):
   - Make sure to exclude any 'sales' made by 'credit'!
 */
-var numCreditPurchases;
+var numCreditPurchases = transactions.filter(transaction => transaction.paymentMethod === 'credit').length;
 
 console.log( 'The total number of credit purchases is:', numCreditPurchases );
 
@@ -205,7 +212,24 @@ console.log( 'The total number of credit purchases is:', numCreditPurchases );
   - The assembled array should be made up of strings, not full `transaction` objects.
   - This array is allowed to contain duplicate values.
 */
-var allVendors;
+
+function arrayVendors(filteredArray, transaction) {
+  if (transaction.vendor) {
+    filteredArray.push(transaction.vendor);
+  }
+  return filteredArray;
+}
+
+
+var allVendors = transactions.reduce(arrayVendors, []);
+
+
+//
+// var filteredArray = allVendors.filter(function(vendor, i){
+//   return allVendors.indexOf(vendor)== i;
+// });
+
+// var allVendors = getArrayVendors.map(transaction => transaction.vendor);
 
 console.log( 'The vendors are:', allVendors );
 
@@ -222,7 +246,20 @@ console.log( 'The vendors are:', allVendors );
   - The assembled array should be made up of strings, not full `transaction` objects.
   - Make sure that the resulting array *does not* include any duplicates.
 */
-var uniqueCustomers;
+
+
+function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
+function name(filteredArray, transaction){
+  if (transaction.customer) {
+    filteredArray.push(transaction.customer);
+  }
+  return filteredArray.filter(onlyUnique);
+}
+
+var uniqueCustomers = transactions.reduce(name, []);
 
 console.log( 'The unique customers are:', uniqueCustomers );
 
@@ -240,7 +277,27 @@ console.log( 'The unique customers are:', uniqueCustomers );
   - There may be more than 1 'sale' that includes 5 or more items.
   - Individual transactions do not have either `name` or `numItems` properties, we'll have to add them to the output.
 */
-var bigSpenders;
+
+function isBigSpender(transaction) {
+  return transaction.items.length >= 5 && transaction.type === 'sale';
+}
+
+function toCustomerSummary(transaction){
+  return { name: transaction.customer, numitems: transaction.items.length }
+}
+
+
+
+function bigSpenderSummary(result, transaction) {
+  if (isBigSpender(transaction)) {
+    result.push(toCustomerSummary(transaction));
+  }
+  debugger
+  return result;
+}
+
+var bigSpenders = transactions.filter(isBigSpender).map(toCustomerSummary)
+var bigSpendersReduce = transactions.reduce(bigSpenderSummary, [])
 
 console.log( 'The "big spenders" are:', bigSpenders );
 
@@ -254,7 +311,12 @@ console.log( 'The "big spenders" are:', bigSpenders );
   HINT(S):
   - Transactions don't have 'prices', but their 'items' do!
 */
-var sumSales;
+
+function sumItems(result, transaction) {
+  return result + transaction.price;
+}
+
+var sumSales = transactions[0]['items'].reduce(sumItems, 0)
 
 console.log( 'The sum of all sales is:', sumSales );
 
@@ -270,9 +332,44 @@ console.log( 'The sum of all sales is:', sumSales );
   - Make sure to include 'price' information from *all* purchases.
 */
 
-var sumPurchases;
+function isAPurchase(transaction) {
+  if (transaction.type === 'purchase'){
+    return transaction;
+  };
+}
 
-console.log( 'The sum of all purhcases is:', sumPurchases );
+var purchaseArray = transactions.filter(isAPurchase)
+
+var itemsOnly = []
+
+purchaseArray.forEach(function(transaction){
+  itemsOnly.push(transaction.items)
+})
+
+function itemsTotal(items){
+  total = 0;
+  items.forEach(function(itemArray){
+    itemArray.forEach(function(item) {
+      total += item.price;
+    });
+  });
+  return total;
+}
+
+sumPurchases = itemsTotal(itemsOnly)
+
+
+// total = 0
+// itemsOnly.each do |itemarray|
+//   itemarray.each do |item|
+//   total += item.price
+// end
+// end
+// return total
+
+
+console.log( 'The sum of all purchases is:', sumPurchases );
+
 
 
 // --------------------------------------------------
@@ -288,7 +385,27 @@ console.log( 'The sum of all purhcases is:', sumPurchases );
   HINT(S):
   - Unlike 'QUESTION 08' and 'QUESTION 09', here we're interested in both 'sale' and 'purchase' transactions.
 */
-var netProfit;
+
+
+function itemsProfit(transactionArray) {
+  netProfit = 0
+  transactionArray.forEach(function(transactionObject){
+    transactionObject.items.forEach(function(item){
+      netProfit += (item.price);
+    });
+  });
+  return netProfit;
+}
+
+
+// netProfit = 0
+// transactions.each do |transactionObject|
+//   transactionObject.items.each do |item|
+//     netProfit += item.price
+//   end
+// end
+
+var netProfit = itemsProfit(transactions);
 
 console.log( 'The net profit is:', netProfit );
 
@@ -302,7 +419,27 @@ console.log( 'The net profit is:', netProfit );
   HINTS:
   - The result of this calculation should be a number (not an array, object, or other data type).
 */
-var mostItems;
+
+// look through the array, find the items and do a count of the size of the items array
+// throw those in an array
+// find the MAX
+
+function mostItemsSold(transactionsArray){
+  lengthArray = []
+  transactionsArray.forEach(function(transaction){
+    lengthArray.push(transaction.items.length);
+  });
+  return lengthArray;
+}
+
+// transaction_array = []
+// transactions.each do |transaction_object|
+//   transaction_array << transaction_object.items.length
+// end
+//
+// transaction_array.max
+
+var mostItems = Math.max.apply(null, mostItemsSold(transactions));
 
 console.log( 'The most items sold in a single transaction is:', mostItems );
 
@@ -313,6 +450,44 @@ console.log( 'The most items sold in a single transaction is:', mostItems );
 /*
   Calculate the sum of the 'purchase' with the fewest items.
 */
-var sumOfSmallestPurchase;
+
+// find all purchases transactions and make it's own array
+// go through that array and find the transaction with the least amount of items
+// check the array again to return the object that has the items count equal to the minimum
+// find the items in that transaction and sum of the prices
+
+function isAPurchase(transaction){
+  return (transaction.type === 'purchase');
+}
+
+var purchaseArray = transactions.filter(isAPurchase);
+
+function leastAmountItems(purchaseTransactions) {
+  smallestArray = []
+  purchaseTransactions.forEach(function(purchase){
+    smallestArray.push(purchase.items.length);
+  });
+  return smallestArray;
+}
+
+var smallestNumber =  Math.min.apply(null, leastAmountItems(purchaseArray));
+
+function isLeastItems(transaction){
+  return (transaction.items.length === smallestNumber);
+}
+
+var smallestObject = purchaseArray.filter(isLeastItems);
+
+function addLeastItems(items){
+  total = 0;
+  items[0].items.forEach(function(item){
+    total += item.price;
+  });
+  return total;
+}
+
+
+var sumOfSmallestPurchase = addLeastItems(smallestObject);
+
 
 console.log( 'The sum of the smallest purchase is:', sumOfSmallestPurchase );
